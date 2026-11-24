@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: workshop-waitlist — minimal required contract
+  version: "1.0"
+  description: Response thành công bọc trong { "data": ... }; lỗi theo { "error": { code, message, details } }.
+paths:
+  /api/health:
+    get:
+      responses:
+        "200": { description: "{ status: ok, commit: <sha> }" }
+  /api/workshops:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Workshop" }
+  /api/workshops/{workshopId}:
+    get:
+      parameters:
+        - { name: workshopId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Workshop" }
+        "404": { description: Error }
+  /api/registrations:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workshopId, customerName, customerPhone]
+              properties:
+                workshopId: { type: string }
+                customerName: { type: string }
+                customerPhone: { type: string }
+                email: { type: string, format: email }
+      responses:
+        "201":
+          description: "data: Registration + accessToken"
+        "400": { description: Error }
+        "409": { description: "ALREADY_REGISTERED" }
+        "422": { description: "REGISTRATION_CLOSED / VALIDATION_ERROR" }
+  /api/registrations/{registrationId}:
+    get:
+      security: [{ token: [] }]
+      parameters:
+        - { name: registrationId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Registration" }
+        "401": { description: Error }
+        "404": { description: Error }
+  /api/registrations/{registrationId}/cancel:
+    post:
+      security: [{ token: [] }]
+      parameters:
+        - { name: registrationId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "data: Registration (status cancelled)" }
+        "409": { description: Error }
+        "422": { description: Error }
+components:
+  securitySchemes:
+    token: { type: http, scheme: bearer }
+  schemas:
+    Workshop:
+      type: object
+      required: [id, title, startsAt, capacity, confirmedCount, waitlistCount, price, registrationOpen]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        startsAt: { type: string, format: date-time }
+        capacity: { type: integer }
+        confirmedCount: { type: integer }
+        waitlistCount: { type: integer }
+        price: { type: integer }
+        registrationOpen: { type: boolean }
+    Registration:
+      type: object
+      required: [id, workshopId, status]
+      properties:
+        id: { type: string }
+        workshopId: { type: string }
+        status: { type: string, enum: [confirmed, waitlisted, cancelled] }
+        waitlistPosition: { type: integer, nullable: true }
+        customerName: { type: string }
+        accessToken: { type: string, description: "Chỉ có trong response tạo" }

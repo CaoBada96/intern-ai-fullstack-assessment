@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: event-seats — minimal required contract
+  version: "1.0"
+  description: Response thành công bọc trong { "data": ... }; lỗi theo { "error": { code, message, details } }.
+paths:
+  /api/health:
+    get:
+      responses:
+        "200": { description: "{ status: ok, commit: <sha> }" }
+  /api/shows:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, title, startsAt, salesCloseAt, availableSeats]
+                      properties:
+                        id: { type: string }
+                        title: { type: string }
+                        startsAt: { type: string, format: date-time }
+                        salesCloseAt: { type: string, format: date-time }
+                        availableSeats: { type: integer }
+  /api/shows/{showId}/seats:
+    get:
+      parameters:
+        - { name: showId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, row, number, tier, price, status]
+                      properties:
+                        id: { type: string }
+                        row: { type: string }
+                        number: { type: integer }
+                        tier: { type: string, enum: [standard, vip] }
+                        price: { type: integer }
+                        status: { type: string, enum: [available, held, sold] }
+        "404": { description: Error }
+  /api/holds:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [showId, seatIds]
+              properties:
+                showId: { type: string }
+                seatIds: { type: array, minItems: 1, maxItems: 6, items: { type: string } }
+      responses:
+        "201":
+          description: "data: { id, accessToken, status: active, expiresAt, seatIds, totalPrice }"
+        "400": { description: Error }
+        "409": { description: "SEATS_UNAVAILABLE, details.unavailableSeatIds" }
+        "422": { description: Error }
+  /api/holds/{holdId}:
+    get:
+      security: [{ token: [] }]
+      parameters:
+        - { name: holdId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "data: { id, status, expiresAt, seatIds, totalPrice }" }
+        "401": { description: Error }
+        "404": { description: Error }
+  /api/holds/{holdId}/confirm:
+    post:
+      security: [{ token: [] }]
+      parameters:
+        - { name: holdId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerName, customerPhone]
+              properties:
+                customerName: { type: string }
+                customerPhone: { type: string }
+      responses:
+        "200": { description: "data: { orderId, status: confirmed, seatIds, totalPrice }" }
+        "409": { description: "HOLD_EXPIRED" }
+        "422": { description: Error }
+  /api/holds/{holdId}/cancel:
+    post:
+      summary: Huỷ hold còn hạn (khách bỏ chọn ghế); ghế trở về available ngay
+      security: [{ token: [] }]
+      parameters:
+        - { name: holdId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "data: { id, status: cancelled }" }
+        "401": { description: Error }
+        "404": { description: Error }
+        "409": { description: "Hold đã confirm/hết hạn" }
+  /api/orders/{orderId}:
+    get:
+      security: [{ token: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "data: { id, status, showId, seatIds, totalPrice, customerName }" }
+        "401": { description: Error }
+        "404": { description: Error }
+  /api/orders/{orderId}/cancel:
+    post:
+      security: [{ token: [] }]
+      parameters:
+        - { name: orderId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "data: { id, status: cancelled }" }
+        "409": { description: Error }
+        "422": { description: Error }
+components:
+  securitySchemes:
+    token: { type: http, scheme: bearer }

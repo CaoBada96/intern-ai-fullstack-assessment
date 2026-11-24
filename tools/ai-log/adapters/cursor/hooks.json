@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      { "command": "node tools/ai-log/log-prompt.mjs --tool cursor --capture hook --respond cursor" }
+    ]
+  }
+}

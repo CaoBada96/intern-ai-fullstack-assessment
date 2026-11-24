@@ -1,0 +1,8 @@
+#!/bin/sh
+# Verify prompt log integrity before every commit (does not block on missing logs).
+if [ -f ai-logs/prompts.jsonl ] || [ -d ai-logs/imported ]; then
+  node tools/ai-log/verify-log.mjs || {
+    echo "ai-log: log verification failed. Do not edit ai-logs/*.jsonl by hand." >&2
+    exit 1
+  }
+fi

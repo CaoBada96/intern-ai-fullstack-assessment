@@ -1,0 +1,28 @@
+# secrets
+.env
+.env.*
+!.env.example
+# logger internals
+ai-logs/logger-errors.log
+ai-logs/*.lock
+# deps / build
+node_modules/
+vendor/
+__pycache__/
+.venv/
+dist/
+build/
+.next/
+target/
+coverage/
+# local db
+*.sqlite
+*.sqlite3
+*.db
+# os / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+# personal AI settings (shared ones in .claude/settings.json are committed)
+.claude/settings.local.json

@@ -1,0 +1,190 @@
+openapi: 3.0.3
+info:
+  title: sports-court — minimal required contract
+  version: "1.0"
+  description: |
+    Contract tối thiểu bắt buộc. Có thể thêm endpoint/trường khác, nhưng KHÔNG được đổi đường dẫn,
+    tên trường hay ý nghĩa status code dưới đây. Response thành công bọc trong { "data": ... }.
+paths:
+  /api/health:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, commit]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  commit: { type: string, description: "git SHA đang chạy (≥7 ký tự)" }
+  /api/courts:
+    get:
+      summary: Danh sách sân đang hoạt động
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Court" }
+  /api/courts/{courtId}/availability:
+    get:
+      parameters:
+        - { name: courtId, in: path, required: true, schema: { type: string } }
+        - { name: date, in: query, required: true, schema: { type: string, format: date } }
+        - { name: duration, in: query, required: true, schema: { type: integer, enum: [60, 90, 120] } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required: [courtId, date, timezone, slots]
+                    properties:
+                      courtId: { type: string }
+                      date: { type: string, format: date }
+                      timezone: { type: string, example: Asia/Ho_Chi_Minh }
+                      slots:
+                        type: array
+                        items:
+                          type: object
+                          required: [startAt, endAt, price, available]
+                          properties:
+                            startAt: { type: string, format: date-time }
+                            endAt: { type: string, format: date-time }
+                            price: { type: integer, description: "VND, do server tính" }
+                            available: { type: boolean }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/bookings:
+    post:
+      parameters:
+        - { name: Idempotency-Key, in: header, required: false, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courtId, startAt, durationMinutes, customerName, customerPhone]
+              properties:
+                courtId: { type: string }
+                startAt: { type: string, format: date-time }
+                durationMinutes: { type: integer, enum: [60, 90, 120] }
+                customerName: { type: string, minLength: 2, maxLength: 100 }
+                customerPhone: { type: string, example: "0912345678" }
+                note: { type: string, maxLength: 500 }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - $ref: "#/components/schemas/Booking"
+                      - type: object
+                        required: [accessToken]
+                        properties:
+                          accessToken: { type: string, description: "Chỉ trả về một lần khi tạo" }
+        "400": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /api/bookings/{bookingId}:
+    get:
+      security: [{ bookingToken: [] }]
+      parameters:
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Booking" }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /api/bookings/{bookingId}/cancel:
+    post:
+      security: [{ bookingToken: [] }]
+      parameters:
+        - { name: bookingId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Booking" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+components:
+  securitySchemes:
+    bookingToken:
+      type: http
+      scheme: bearer
+      description: "Authorization: Bearer <accessToken>"
+  schemas:
+    Court:
+      type: object
+      required: [id, name, sport, venue]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        sport: { type: string, enum: [pickleball, football_5, football_7] }
+        venue:
+          type: object
+          required: [name, address, openTime, closeTime]
+          properties:
+            name: { type: string }
+            address: { type: string }
+            openTime: { type: string, example: "05:30" }
+            closeTime: { type: string, example: "22:30" }
+    Booking:
+      type: object
+      required: [id, status, courtId, startAt, endAt, totalPrice]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [active, cancelled, completed] }
+        courtId: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        totalPrice: { type: integer }
+        customerName: { type: string }
+        customerPhone: { type: string }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
