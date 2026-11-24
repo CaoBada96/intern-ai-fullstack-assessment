@@ -46,14 +46,21 @@ git push origin main --tags
 - Công cụ chấm dùng **tag `submission`**. Nếu không có tag thì dùng **commit cuối cùng trước deadline**. Commit sau deadline sẽ bị bỏ qua.
 - Bản deploy phải chạy **đúng commit này**: `/api/health` trả về `commit` khớp với commit của tag (so 7 ký tự đầu).
 
-## 3. Form nộp bài
+## 3. Nộp bài
 
-- Họ tên, email liên hệ.
-- Track.
-- GitHub URL. Nếu repo private, mời tài khoản reviewer được cung cấp.
-- Domain public.
-- Tool AI đã dùng.
-- (Tuỳ chọn) Ghi chú cho reviewer: những gì chưa xong và lý do.
+Không cần điền form. Sau khi push tag `submission`, **nhắn một tin cho reviewer** trên kênh chat được cung cấp lúc kickoff, theo mẫu:
+
+```text
+[Nộp bài] Nguyễn Văn A — sports-court
+Repo: https://github.com/<user>/<repo>
+Domain: https://court-booking-abc.vercel.app
+Tool AI: Claude Code, Cursor
+Ghi chú: (tuỳ chọn) những gì chưa xong và lý do
+```
+
+- Nếu repo private, mời tài khoản GitHub của reviewer **trước khi** nhắn.
+- Thời điểm chấm là thời điểm của tag/commit trên GitHub, **không phải** giờ gửi tin nhắn. Nhắn trễ vài phút không sao, nhưng commit sau deadline sẽ bị bỏ qua.
+- Reviewer sẽ trả lời xác nhận đã nhận. Nếu sau 2 giờ chưa có phản hồi, hãy nhắn lại.
 
 ## 4. Checklist tự kiểm trước khi nộp
 

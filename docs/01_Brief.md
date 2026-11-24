@@ -27,7 +27,7 @@ Bạn sẽ xây dựng một web app nhỏ nhưng **hoàn chỉnh và đã deplo
 | T0 | Nhận đề | Nhận track, link starter kit, giờ bắt đầu/deadline chính thức |
 | T0 + 20' | Kickoff call (online) | Cài prompt logger **trước prompt đầu tiên**, chứng minh log hoạt động, hỏi đáp đề |
 | **T0 + 4h** | **Mốc bắt buộc** | Commit + push `PLAN.md` (phân tích yêu cầu, giả định, kế hoạch) |
-| T0 + 2–3 ngày | Deadline | Push code, tag `submission`, nộp form (GitHub URL + domain) |
+| T0 + 2–3 ngày | Deadline | Push code, tag `submission`, nhắn GitHub URL + domain cho reviewer |
 | Sau deadline | Review live 60' | Demo, giải thích code, live prompt test, change request bằng AI |
 
 Câu hỏi làm rõ đề gửi qua kênh chung. Câu trả lời sẽ được công bố trong FAQ cho **tất cả** ứng viên. Nếu không nhận được câu trả lời kịp, hãy tự đưa ra giả định hợp lý và ghi lại trong `PLAN.md`.

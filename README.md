@@ -13,7 +13,7 @@
 | [`docs/01_Brief.md`](docs/01_Brief.md) | Đề chung: timeline, F01–F08, deploy, deliverables, live review, cách đánh giá |
 | [`docs/02_Rules_and_Conventions.md`](docs/02_Rules_and_Conventions.md) | Convention theo stack, API, migration, seed, git, test, security |
 | [`docs/03_Prompt_Logging_Spec.md`](docs/03_Prompt_Logging_Spec.md) | Schema prompt log, cách cài logger cho từng tool, redaction |
-| [`docs/04_Submission_Guide.md`](docs/04_Submission_Guide.md) | `assessment.json`, tag `submission`, form nộp, checklist |
+| [`docs/04_Submission_Guide.md`](docs/04_Submission_Guide.md) | `assessment.json`, tag `submission`, cách nhắn nộp bài, checklist |
 | [`docs/tracks/`](docs/tracks/) | Danh mục topic + track pack (nghiệp vụ, seed spec, OpenAPI contract) |
 
 ## Cấu trúc repo
